@@ -125,3 +125,30 @@ export const saveConsultationVisit = async (visitData: Omit<Visit, 'id'>): Promi
 
   return { success: true, visitId: `VISIT-${Date.now().toString().slice(-6)}` };
 };
+
+// Append to src/services/mockApi.ts
+
+export const getAllMedicines = async (): Promise<Medicine[]> => {
+  await new Promise((r) => setTimeout(r, 100));
+  return [...mockMedicines];
+};
+
+export const updateMedicineStock = async (id: number, delta: number): Promise<Medicine> => {
+  await new Promise((r) => setTimeout(r, 100));
+  const med = mockMedicines.find((m) => m.id === id);
+  if (!med) throw new Error('Medicine not found');
+  med.stockQty = Math.max(0, med.stockQty + delta);
+  return { ...med };
+};
+
+export const createMedicine = async (
+  data: Omit<Medicine, 'id'>
+): Promise<Medicine> => {
+  await new Promise((r) => setTimeout(r, 150));
+  const newMed: Medicine = {
+    ...data,
+    id: mockMedicines.length > 0 ? Math.max(...mockMedicines.map((m) => m.id)) + 1 : 1
+  };
+  mockMedicines.unshift(newMed);
+  return newMed;
+};
