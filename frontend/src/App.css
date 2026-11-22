@@ -1,0 +1,88 @@
+/* src/App.css */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background-color: var(--bg-sidebar);
+  color: var(--text-white);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.brand-section {
+  padding: 20px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.brand-icon {
+  color: #38bdf8;
+  font-size: 20px;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  color: var(--text-light);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+.nav-item:hover {
+  background-color: var(--bg-sidebar-hover);
+  color: var(--text-white);
+}
+.nav-item.active {
+  background-color: var(--bg-sidebar-active);
+  color: var(--text-white);
+}
+.nav-item i {
+  font-size: 16px;
+  width: 18px;
+  text-align: center;
+}
+
+/* Content Area */
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-app);
+  overflow: hidden;
+}
+
+.top-bar {
+  height: 60px;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.content-canvas {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
