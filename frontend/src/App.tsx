@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import './App.css';
 import './styles/patients.css';
+import './styles/consultation.css';
 import type { Patient } from './types';
 import { PatientSearch } from './components/PatientSearch';
 import { NewPatientModal } from './components/NewPatientModal';
+import { ConsultationView } from './components/ConsultationView';
 
 export const App = () => {
   const [activeTab, setActiveTab] = useState<'consultation' | 'patients' | 'inventory'>('consultation');
@@ -54,7 +56,7 @@ export const App = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               <i className="fa fa-circle" style={{ color: 'var(--success)', fontSize: '10px', marginRight: '6px' }}></i>
-              SQLite WAL Active
+              Local Vector Search Active
             </span>
           </div>
         </header>
@@ -88,12 +90,12 @@ export const App = () => {
                 style={{ fontSize: '12px' }}
                 onClick={() => setActivePatient(null)}
               >
-                <i className="fa fa-times"></i> Clear Selection
+                <i className="fa fa-times"></i> Change Patient
               </button>
             </div>
           ) : (
             <div style={{
-              padding: '24px',
+              padding: '30px',
               textAlign: 'center',
               backgroundColor: 'var(--bg-surface)',
               border: '1px dashed var(--border-color)',
@@ -102,26 +104,16 @@ export const App = () => {
               color: 'var(--text-muted)'
             }}>
               <i className="fa fa-search" style={{ fontSize: '24px', marginBottom: '8px', color: 'var(--text-light)' }}></i>
-              <p>Search by <b>Mobile number</b>, <b>Patient Name</b>, or <b>DOB</b> above to load a consultation file.</p>
+              <p>Please search for a patient above (e.g. <b>"Robert"</b> or <b>"987"</b>) to start a consultation.</p>
             </div>
           )}
 
-          {/* Placeholders for upcoming steps */}
+          {/* Active Consultation Section */}
           {activePatient && (
-            <div style={{
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: '20px'
-            }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '10px' }}>
-                <i className="fa fa-stethoscope" style={{ color: 'var(--primary)', marginRight: '8px' }}></i>
-                Consultation Record for {activePatient.fullName}
-              </h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-                Ready for Dynamic Clinical Records (Vitals) and the Dynamic Prescription Table (Subtask 4 & 5).
-              </p>
-            </div>
+            <ConsultationView 
+              patient={activePatient} 
+              onVisitSaved={() => setActivePatient(null)} 
+            />
           )}
         </main>
       </div>
