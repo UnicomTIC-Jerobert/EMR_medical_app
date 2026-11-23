@@ -1,29 +1,35 @@
+// lib/app.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'core/theme/app_theme.dart';
+import 'features/patients/presentation/patient_search_bar.dart';
+import 'features/patients/presentation/active_patient_banner.dart';
+import 'features/patients/presentation/patient_providers.dart';
 
-class MainShellLayout extends StatefulWidget {
+class MainShellLayout extends ConsumerStatefulWidget {
   const MainShellLayout({super.key});
 
   @override
-  State<MainShellLayout> createState() => _MainShellLayoutState();
+  ConsumerState<MainShellLayout> createState() => _MainShellLayoutState();
 }
 
-class _MainShellLayoutState extends State<MainShellLayout> {
-  int _activeNavIndex = 0; // 0 = Consultation, 1 = Inventory
+class _MainShellLayoutState extends ConsumerState<MainShellLayout> {
+  int _activeNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
+    final activePatient = ref.watch(activePatientProvider);
+
     return Scaffold(
       body: Row(
         children: [
-          // 1. Sidebar (Dark Slate)
+          // 1. Sidebar
           Container(
             width: 240,
             color: AppColors.bgSidebar,
             child: Column(
               children: [
-                // Brand Header
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -42,30 +48,16 @@ class _MainShellLayoutState extends State<MainShellLayout> {
                           color: Colors.white,
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Navigation Items
+                _buildNavItem(0, FontAwesomeIcons.userDoctor, "Consultation"),
                 _buildNavItem(
-                  index: 0,
-                  icon: FontAwesomeIcons.userDoctor,
-                  label: "Consultation",
-                ),
-                _buildNavItem(
-                  index: 1,
-                  icon: FontAwesomeIcons.prescriptionBottleMedical,
-                  label: "Inventory",
-                ),
-
+                    1, FontAwesomeIcons.prescriptionBottleMedical, "Inventory"),
                 const Spacer(),
-
-                // System Status at Bottom
                 Container(
                   padding: const EdgeInsets.all(16),
                   margin: const EdgeInsets.all(12),
@@ -78,7 +70,7 @@ class _MainShellLayoutState extends State<MainShellLayout> {
                       Icon(Icons.circle, color: AppColors.success, size: 10),
                       SizedBox(width: 8),
                       Text(
-                        "SQLite Engine Offline",
+                        "Local Daemon Ready",
                         style: TextStyle(
                             color: AppColors.textLight, fontSize: 11.5),
                       ),
@@ -93,7 +85,7 @@ class _MainShellLayoutState extends State<MainShellLayout> {
           Expanded(
             child: Column(
               children: [
-                // Top Header Bar
+                // Top Header Bar with Patient Search Bar
                 Container(
                   height: 64,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -101,23 +93,17 @@ class _MainShellLayoutState extends State<MainShellLayout> {
                     color: AppColors.bgSurface,
                     border: Border(bottom: BorderSide(color: AppColors.border)),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _activeNavIndex == 0
-                            ? "New Consultation"
-                            : "Medicine Inventory Management",
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                      const Row(
+                      PatientSearchBar(),
+                      Row(
                         children: [
-                          Icon(Icons.desktop_windows,
-                              size: 16, color: AppColors.textMuted),
+                          Icon(Icons.circle,
+                              size: 10, color: AppColors.success),
                           SizedBox(width: 6),
                           Text(
-                            "Workstation Client",
+                            "SQLite WAL Mode",
                             style: TextStyle(
                                 fontSize: 12, color: AppColors.textMuted),
                           ),
@@ -132,13 +118,27 @@ class _MainShellLayoutState extends State<MainShellLayout> {
                   child: Container(
                     color: AppColors.bgApp,
                     padding: const EdgeInsets.all(24),
-                    child: Center(
-                      child: Text(
-                        "Active View Index: $_activeNavIndex\nReady for Riverpod Models & Dynamic Form",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.textMuted),
-                      ),
-                    ),
+                    child: _activeNavIndex == 0
+                        ? ListView(
+                            children: [
+                              const ActivePatientBanner(),
+                              if (activePatient != null)
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.bgSurface,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: AppColors.border),
+                                  ),
+                                  child: Text(
+                                    "Ready for Dynamic Consultation Vitals & Prescription Table for ${activePatient.fullName}!",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                            ],
+                          )
+                        : const Center(child: Text("Inventory View (Step 4)")),
                   ),
                 ),
               ],
@@ -149,8 +149,7 @@ class _MainShellLayoutState extends State<MainShellLayout> {
     );
   }
 
-  Widget _buildNavItem(
-      {required int index, required IconData icon, required String label}) {
+  Widget _buildNavItem(int index, IconData icon, String label) {
     final bool isActive = _activeNavIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -165,11 +164,9 @@ class _MainShellLayoutState extends State<MainShellLayout> {
           ),
           child: Row(
             children: [
-              FaIcon(
-                icon,
-                size: 16,
-                color: isActive ? Colors.white : AppColors.textLight,
-              ),
+              FaIcon(icon,
+                  size: 16,
+                  color: isActive ? Colors.white : AppColors.textLight),
               const SizedBox(width: 12),
               Text(
                 label,
