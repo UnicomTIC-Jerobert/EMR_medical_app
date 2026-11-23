@@ -1,0 +1,38 @@
+name: clinic_desktop
+description: "OmniClinic Desktop EMR System"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management (compile-safe, reactive)
+  flutter_riverpod: ^2.5.1
+
+  # Icons (FontAwesome for Flutter)
+  font_awesome_flutter: ^10.7.0
+
+  # HTTP Client for local Python FastAPI backend
+  dio: ^5.4.3+1
+
+  # Desktop Window Management (Min/Max size, titles)
+  window_manager: ^0.3.8
+
+  # High-quality Native Printing & PDF Generation
+  pdf: ^3.10.8
+  printing: ^5.12.0
+
+  # Formatting (Dates, currencies)
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
