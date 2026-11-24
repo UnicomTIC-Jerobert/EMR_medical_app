@@ -6,6 +6,7 @@ import '../../patients/models/patient.dart';
 import '../../inventory/data/medicine_repository.dart';
 import '../../inventory/models/medicine.dart';
 import '../models/visit_models.dart';
+import 'prescription_pdf_dialog.dart';
 
 /// Helper state class to hold controllers for dynamic prescription rows
 class PrescriptionRowState {
@@ -149,7 +150,7 @@ class _ConsultationViewState extends ConsumerState<ConsultationView> {
   }
 
   Future<void> _handleFinalize() async {
-    // Validate rows
+    // 1. Validation: Ensure all rows have a medicine name
     for (var r in _rows) {
       if (r.medicineController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -164,28 +165,73 @@ class _ConsultationViewState extends ConsumerState<ConsultationView> {
     }
 
     setState(() => _isSaving = true);
-    await Future.delayed(
-        const Duration(milliseconds: 250)); // Simulating DB transaction
 
-    // Deduct stock in repository
-    final medRepo = ref.read(medicineRepositoryProvider);
-    for (var r in _rows) {
-      if (r.selectedMedicine != null) {
-        final days = int.tryParse(r.durationController.text) ?? 5;
-        medRepo.deductStock(r.selectedMedicine!.id, days * 2);
+    try {
+      // 2. Deduct inventory stock
+      final medRepo = ref.read(medicineRepositoryProvider);
+      for (var r in _rows) {
+        if (r.selectedMedicine != null) {
+          final days = int.tryParse(r.durationController.text) ?? 5;
+          medRepo.deductStock(r.selectedMedicine!.id, days * 2);
+        }
       }
-    }
 
-    setState(() => _isSaving = false);
+      // 3. Compile dynamic NoSQL custom observations into a map
+      final Map<String, String> customNotesMap = {};
+      for (var param in _customParams) {
+        if (param.keyController.text.trim().isNotEmpty) {
+          customNotesMap[param.keyController.text.trim()] =
+              param.valueController.text.trim();
+        }
+      }
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Consultation recorded & medicine stock deducted!'),
-          backgroundColor: AppColors.success,
-        ),
+      // 4. Construct ClinicalData (Fixed vitals + Dynamic NoSQL map)
+      final clinicalData = ClinicalData(
+        bp: _bpController.text.trim(),
+        pulse: _pulseController.text.trim(),
+        temperature: _tempController.text.trim(),
+        weight: _weightController.text.trim(),
+        spo2: _spo2Controller.text.trim(),
+        customNotes: customNotesMap,
       );
-      widget.onFinalized();
+
+      // 5. Construct Prescription Items list
+      final presItems = _rows.map((r) {
+        return PrescriptionItem(
+          id: r.id,
+          medicineId: r.selectedMedicine?.id ?? 0,
+          medicineName: r.medicineController.text.trim(),
+          dosage: r.dosageController.text.trim(),
+          frequency: r.frequency,
+          durationDays: int.tryParse(r.durationController.text) ?? 5,
+          instructions: r.instructionsController.text.trim(),
+        );
+      }).toList();
+
+      final visitRef =
+          "VISIT-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}";
+
+      // 6. Launch Native PDF & Print Dialog
+      if (mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => PrescriptionPdfDialog(
+            patient: widget.patient,
+            clinicalData: clinicalData,
+            complaints: _complaintsController.text.trim(),
+            items: presItems,
+            visitRef: visitRef,
+          ),
+        );
+
+        // 7. Clear consultation state after print dialog is closed
+        widget.onFinalized();
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 

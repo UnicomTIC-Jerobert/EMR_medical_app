@@ -7,6 +7,7 @@ import 'features/patients/presentation/patient_search_bar.dart';
 import 'features/patients/presentation/active_patient_banner.dart';
 import 'features/patients/presentation/patient_providers.dart';
 import 'features/consultation/presentation/consultation_view.dart';
+import 'features/inventory/presentation/inventory_view.dart';
 
 class MainShellLayout extends ConsumerStatefulWidget {
   const MainShellLayout({super.key});
@@ -135,7 +136,7 @@ class _MainShellLayoutState extends ConsumerState<MainShellLayout> {
                                 ),
                             ],
                           )
-                        : const Center(child: Text("Inventory View (Step 4)")),
+                        : const InventoryView(),
                   ),
                 ),
               ],
