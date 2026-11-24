@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'features/patients/presentation/patient_search_bar.dart';
 import 'features/patients/presentation/active_patient_banner.dart';
 import 'features/patients/presentation/patient_providers.dart';
+import 'features/consultation/presentation/consultation_view.dart';
 
 class MainShellLayout extends ConsumerStatefulWidget {
   const MainShellLayout({super.key});
@@ -123,18 +124,14 @@ class _MainShellLayoutState extends ConsumerState<MainShellLayout> {
                             children: [
                               const ActivePatientBanner(),
                               if (activePatient != null)
-                                Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.bgSurface,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.border),
-                                  ),
-                                  child: Text(
-                                    "Ready for Dynamic Consultation Vitals & Prescription Table for ${activePatient.fullName}!",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600),
-                                  ),
+                                ConsultationView(
+                                  patient: activePatient,
+                                  onFinalized: () {
+                                    // Clear active patient after finalization
+                                    ref
+                                        .read(activePatientProvider.notifier)
+                                        .state = null;
+                                  },
                                 ),
                             ],
                           )
